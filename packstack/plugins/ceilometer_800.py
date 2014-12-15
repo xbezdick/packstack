@@ -26,6 +26,7 @@ from packstack.modules.shortcuts import get_mq
 from packstack.modules.ospluginutils import appendManifestFile
 from packstack.modules.ospluginutils import createFirewallResources
 from packstack.modules.ospluginutils import getManifestTemplate
+from packstack.modules.ospluginutils import generateIpaServiceManifests
 
 # ------------- Ceilometer Packstack Plugin Initialization --------------
 
@@ -274,6 +275,16 @@ def create_manifest(config, messages):
         else:
             sentinel_fallbacks = ''
         config['CONFIG_REDIS_SENTINEL_FALLBACKS'] = sentinel_fallbacks
+
+    if (config['CONFIG_IPA_INSTALL'] == 'y' and
+            config['CONFIG_AMQP_ENABLE_SSL'] and
+            config['CONFIG_AMQP_SSL_SELF_SIGNED'] == 'y'):
+        ipa_host = config['CONFIG_CONTROLLER_HOST']
+        ssl_key_file = '/etc/pki/tls/private/ssl_amqp_ceilometer.key'
+        ssl_cert_file = '/etc/pki/tls/certs/ssl_amqp_ceilometer.crt'
+        ipa_service = 'ceilometer'
+        generateIpaServiceManifests(config, ipa_host, ipa_service,
+                                    ssl_key_file, ssl_cert_file)
 
     fw_details = dict()
     key = "ceilometer_api"

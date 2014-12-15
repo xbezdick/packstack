@@ -25,6 +25,7 @@ from packstack.installer import validators
 from packstack.installer import processors
 from packstack.installer.exceptions import ParamValidationError
 from packstack.installer import utils
+from packstack.installer import output_messages
 from packstack.installer.utils import split_hosts
 
 from packstack.modules.ospluginutils import appendManifestFile
@@ -155,8 +156,18 @@ def initConfig(controller):
 
 
 def initSequences(controller):
-    if controller.CONF['CONFIG_SWIFT_INSTALL'] != 'y':
+    config = controller.CONF
+    if config['CONFIG_SWIFT_INSTALL'] != 'y':
         return
+
+    # If FreeIPA is installed on same host as swift ipa services collide
+    # on swift proxy port. This is unsupported setup but we still try to
+    # make it work.
+    if (config['CONFIG_IPA_INSTALL'] == 'y' and
+            config['CONFIG_IPA_HOST'] == config['CONFIG_CONTROLLER_HOST']):
+        config['CONFIG_SWIFT_PROXY_PORT'] = '8081'
+    else:
+        config['CONFIG_SWIFT_PROXY_PORT'] = '8080'
 
     steps = [
         {'title': 'Adding Swift Keystone manifest entries',
@@ -305,7 +316,7 @@ def create_proxy_manifest(config, messages):
     fw_details[key]['host'] = "ALL"
     fw_details[key]['service_name'] = "swift proxy"
     fw_details[key]['chain'] = "INPUT"
-    fw_details[key]['ports'] = ['8080']
+    fw_details[key]['ports'] = "%s" % config['CONFIG_SWIFT_PROXY_PORT']
     fw_details[key]['proto'] = "tcp"
     config['FIREWALL_SWIFT_PROXY_RULES'] = fw_details
 
@@ -356,6 +367,11 @@ def create_storage_manifest(config, messages):
 
 
 def create_common_manifest(config, messages):
+    if (config['CONFIG_IPA_INSTALL'] == 'y' and
+            config['CONFIG_IPA_HOST'] == config['CONFIG_CONTROLLER_HOST']):
+        msg = output_messages.WARN_IPA_CONTROLLER_SWIFT
+        messages.append(utils.color_text(msg, 'yellow'))
+
     for manifestfile, marker in manifestfiles.getFiles():
         if manifestfile.endswith("_swift.pp"):
             data = getManifestTemplate("swift_common")

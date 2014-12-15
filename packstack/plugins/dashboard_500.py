@@ -25,6 +25,7 @@ from packstack.installer import utils
 
 from packstack.modules.ospluginutils import appendManifestFile
 from packstack.modules.ospluginutils import getManifestTemplate
+from packstack.modules.ospluginutils import generateIpaServiceManifests
 
 # ------------- Horizon Packstack Plugin Initialization --------------
 
@@ -129,7 +130,6 @@ def initSequences(controller):
 def create_manifest(config, messages):
     config["CONFIG_HORIZON_SECRET_KEY"] = uuid.uuid4().hex
     horizon_host = config['CONFIG_CONTROLLER_HOST']
-    manifestfile = "%s_horizon.pp" % horizon_host
 
     proto = "http"
     config["CONFIG_HORIZON_PORT"] = 80
@@ -141,6 +141,9 @@ def create_manifest(config, messages):
 
         # Are we using the users cert/key files
         if config["CONFIG_SSL_CERT"]:
+            if config['CONFIG_IPA_HOST'] == config['CONFIG_CONTROLLER_HOST']:
+                raise RuntimeError("FreeIPA on same host as controller won't "
+                                   " work with user provided certificates.")
             ssl_cert = config["CONFIG_SSL_CERT"]
             ssl_key = config["CONFIG_SSL_KEY"]
             ssl_chain = config["CONFIG_SSL_CACHAIN"]
@@ -163,11 +166,20 @@ def create_manifest(config, messages):
             host_resources.append((ssl_key, 'ssl_ps_server.key'))
             host_resources.append((ssl_chain, 'ssl_ps_chain.crt'))
         else:
-            messages.append(
-                "%sNOTE%s : A certificate was generated to be used for ssl, "
-                "You should change the ssl certificate configured in "
-                "/etc/httpd/conf.d/ssl.conf on %s to use a CA signed cert."
-                % (utils.COLORS['red'], utils.COLORS['nocolor'], horizon_host))
+            if config['CONFIG_IPA_INSTALL'] == 'y':
+                ipa_host = config['CONFIG_CONTROLLER_HOST']
+                ssl_key_file = '/etc/pki/tls/private/ssl_ps_server.key'
+                ssl_cert_file = '/etc/pki/tls/certs/ssl_ps_server.crt'
+                ipa_service = 'HTTP'
+                generateIpaServiceManifests(config, ipa_host, ipa_service,
+                                            ssl_key_file, ssl_cert_file)
+            else:
+                messages.append(
+                    "%sNOTE%s : A certificate was generated to be used for "
+                    "ssl, You should change the ssl certificate configured "
+                    "in /etc/httpd/conf.d/ssl.conf on %s to use a CA signed "
+                    "cert." % (utils.COLORS['red'], utils.COLORS['nocolor'],
+                               horizon_host))
     else:
         config["CONFIG_HORIZON_SSL"] = False
 
@@ -180,6 +192,7 @@ def create_manifest(config, messages):
         if config["CONFIG_NEUTRON_FWAAS"] == 'y':
             config["CONFIG_HORIZON_NEUTRON_FW"] = True
 
+    manifestfile = "%s_horizon.pp" % horizon_host
     manifestdata = getManifestTemplate("horizon")
     appendManifestFile(manifestfile, manifestdata)
 

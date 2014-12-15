@@ -24,6 +24,7 @@ from packstack.modules.shortcuts import get_mq
 from packstack.modules.ospluginutils import appendManifestFile
 from packstack.modules.ospluginutils import createFirewallResources
 from packstack.modules.ospluginutils import getManifestTemplate
+from packstack.modules.ospluginutils import generateIpaServiceManifests
 
 # ------------- Glance Packstack Plugin Initialization --------------
 
@@ -127,6 +128,16 @@ def create_keystone_manifest(config, messages):
 def create_manifest(config, messages):
     if config['CONFIG_UNSUPPORTED'] != 'y':
         config['CONFIG_STORAGE_HOST'] = config['CONFIG_CONTROLLER_HOST']
+
+    if (config['CONFIG_IPA_INSTALL'] == 'y' and
+            config['CONFIG_AMQP_ENABLE_SSL'] and
+            config['CONFIG_AMQP_SSL_SELF_SIGNED'] == 'y'):
+        ipa_host = config['CONFIG_STORAGE_HOST']
+        ssl_key_file = '/etc/pki/tls/private/ssl_amqp_glance.key'
+        ssl_cert_file = '/etc/pki/tls/certs/ssl_amqp_glance.crt'
+        ipa_service = 'glance'
+        generateIpaServiceManifests(config, ipa_host, ipa_service,
+                                    ssl_key_file, ssl_cert_file)
 
     manifestfile = "%s_glance.pp" % config['CONFIG_STORAGE_HOST']
     manifestdata = getManifestTemplate("glance")

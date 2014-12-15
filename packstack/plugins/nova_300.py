@@ -32,6 +32,7 @@ from packstack.modules.ospluginutils import createFirewallResources
 from packstack.modules.ospluginutils import getManifestTemplate
 from packstack.modules.ospluginutils import manifestfiles
 from packstack.modules.ospluginutils import NovaConfig
+from packstack.modules.ospluginutils import generateIpaServiceManifests
 
 # ------------- Nova Packstack Plugin Initialization --------------
 
@@ -698,6 +699,19 @@ def create_common_manifest(config, messages):
             else:
                 data += getManifestTemplate("nova_common_nopw")
             appendManifestFile(os.path.split(manifestfile)[1], data)
+
+    ipa_nova_hosts = compute_hosts
+    ipa_nova_hosts |= set([config.get('CONFIG_CONTROLLER_HOST')])
+    for host in ipa_nova_hosts:
+        if (config['CONFIG_IPA_INSTALL'] == 'y' and
+                config['CONFIG_AMQP_ENABLE_SSL'] and
+                config['CONFIG_AMQP_SSL_SELF_SIGNED'] == 'y'):
+            ipa_host = host
+            ssl_key_file = '/etc/pki/tls/private/ssl_amqp_nova.key'
+            ssl_cert_file = '/etc/pki/tls/certs/ssl_amqp_nova.crt'
+            ipa_service = 'nova'
+            generateIpaServiceManifests(config, ipa_host, ipa_service,
+                                        ssl_key_file, ssl_cert_file)
 
 
 def create_neutron_manifest(config, messages):

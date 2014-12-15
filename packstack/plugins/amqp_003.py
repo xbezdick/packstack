@@ -24,6 +24,7 @@ from packstack.modules.common import filtered_hosts
 from packstack.modules.ospluginutils import appendManifestFile
 from packstack.modules.ospluginutils import createFirewallResources
 from packstack.modules.ospluginutils import getManifestTemplate
+from packstack.modules.ospluginutils import generateIpaServiceManifests
 
 # ------------- AMQP Packstack Plugin Initialization --------------
 
@@ -156,6 +157,21 @@ def initConfig(controller):
          "NEED_CONFIRM": False,
          "CONDITION": False},
 
+        {"CMD_OPTION": "amqp-ssl-cacert-file",
+         "USAGE": ("The filename of the CAcertificate that the AMQP service "
+                   "is going to use for verification"),
+         "PROMPT": ("Enter the filename of the SSL CAcertificate for the AMQP"
+                    " service"),
+         "OPTION_LIST": [],
+         "VALIDATORS": [validators.validate_not_empty],
+         "DEFAULT_VALUE": "/etc/pki/tls/certs/amqp_selfcert.pem",
+         "MASK_INPUT": False,
+         "LOOSE_VALIDATION": True,
+         "CONF_NAME": "CONFIG_AMQP_SSL_CACERT_FILE",
+         "USE_DEFAULT": False,
+         "NEED_CONFIRM": False,
+         "CONDITION": False},
+
         {"CMD_OPTION": "amqp-ssl-key-file",
          "USAGE": ("The filename of the private key that the AMQP service "
                    "is going to use"),
@@ -245,13 +261,22 @@ def create_manifest(config, messages):
         config['CONFIG_AMQP_PROTOCOL'] = 'ssl'
         config['CONFIG_AMQP_CLIENTS_PORT'] = "5671"
         if config['CONFIG_AMQP_SSL_SELF_SIGNED'] == 'y':
-            server.append(
-                "openssl req -batch -new -x509 -nodes -keyout %s "
-                "-out %s -days 1095"
-                % (config['CONFIG_AMQP_SSL_KEY_FILE'],
-                   config['CONFIG_AMQP_SSL_CERT_FILE'])
-            )
-            server.execute()
+            if config['CONFIG_IPA_INSTALL'] != 'y':
+                server.append(
+                    "openssl req -batch -new -x509 -nodes -keyout %s "
+                    "-out %s -days 1095"
+                    % (config['CONFIG_AMQP_SSL_KEY_FILE'],
+                       config['CONFIG_AMQP_SSL_CERT_FILE'])
+                )
+                server.execute()
+            else:
+                config['CONFIG_AMQP_SSL_CACERT_FILE'] = '/etc/ipa/ca.crt'
+                ipa_host = config['CONFIG_AMQP_HOST']
+                ipa_service = 'AMQP'
+                ssl_key_file = config['CONFIG_AMQP_SSL_KEY_FILE']
+                ssl_cert_file = config['CONFIG_AMQP_SSL_CERT_FILE']
+                generateIpaServiceManifests(config, ipa_host, ipa_service,
+                                            ssl_key_file, ssl_cert_file)
     else:
         # Set default values
         config['CONFIG_AMQP_CLIENTS_PORT'] = "5672"

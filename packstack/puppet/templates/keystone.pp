@@ -7,6 +7,17 @@ $keystone_token_provider_str = downcase(hiera('CONFIG_KEYSTONE_TOKEN_FORMAT'))
 $keystone_api_version_str = hiera('CONFIG_KEYSTONE_API_VERSION')
 $keystone_url = "http://${keystone_endpoint_cfg_ctrl_host}:5000/${keystone_api_version_str}"
 $keystone_admin_url = "http://${keystone_endpoint_cfg_ctrl_host}:35357/${keystone_api_version_str}"
+$controller_host = hiera('CONFIG_CONTROLLER_HOST')
+$ipa_install = hiera('CONFIG_IPA_INSTALL')
+$ipa_host = hiera('CONFIG_IPA_HOST',undef)
+
+if ($ipa_install and ($ipa_host == $controller_host)) {
+  $configure_apache = false
+  $conf_template = '/etc/httpd/conf/httpd.conf'
+} else {
+  $configure_apache = true
+  $conf_template = undef
+}
 
 class { 'keystone':
   admin_token         => hiera('CONFIG_KEYSTONE_ADMIN_TOKEN'),
@@ -21,8 +32,19 @@ class { 'keystone':
 if $keystone_service_name == 'httpd' {
   include packstack::apache_common
 
-  class { 'keystone::wsgi::apache':
-    ssl => $keystone_use_ssl,
+  class{ 'apache':
+    purge_configs       => false,
+    default_mods        => true,
+    default_confd_files => true,
+    conf_template       => $conf_template,
+  }
+
+  if $configure_apache {
+    class { 'keystone::wsgi::apache':
+      ssl => $keystone_use_ssl,
+    }
+  } else {
+    info ("TODO: FIXME: BROOOOKEEEEEN")
   }
 }
 

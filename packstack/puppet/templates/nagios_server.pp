@@ -13,6 +13,13 @@ exec { 'nagios-plugins-ping':
   before  => Class['nagios_configs']
 }
 
+class{ 'apache':
+  purge_configs => false,
+  default_mods => true,
+  default_confd_files => true,
+  conf_template => '/etc/httpd/conf/httpd.conf',
+}
+
 class nagios_configs(){
   file { ['/etc/nagios/nagios_command.cfg', '/etc/nagios/nagios_host.cfg']:
     ensure => 'present',
@@ -74,10 +81,6 @@ class { 'nagios_configs':
 }
 
 include concat::setup
-
-class { 'apache':
-  purge_configs => false,
-}
 
 class { 'apache::mod::php': }
 

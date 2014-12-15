@@ -5,6 +5,7 @@ class { 'memcached': }
 
 class { 'swift::proxy':
   proxy_local_net_ip => hiera('CONFIG_CONTROLLER_HOST'),
+  port               => hiera('CONFIG_SWIFT_PROXY_PORT'),
   pipeline           => [
     'catch_errors',
     'bulk',

@@ -106,6 +106,60 @@ def createFirewallResources(hiera_key, default_value='{}'):
     return "create_resources(packstack::firewall, %s)\n\n" % hiera_function
 
 
+def createIpaHostResources(hiera_key, default_value='{}'):
+    hiera_function = "hiera('%s', %s)" % (hiera_key, default_value)
+    return "create_resources(ipa::hostadd, %s)\n\n" % hiera_function
+
+
+def createIpaClientResources(hiera_key, default_value='{}'):
+    hiera_function = "hiera('%s', %s)" % (hiera_key, default_value)
+    return "create_resources(packstack::ipa_client, %s)\n\n" % hiera_function
+
+
+def createIpaServiceResources(hiera_key, default_value='{}'):
+    hiera_function = "hiera('%s', %s)" % (hiera_key, default_value)
+    return "create_resources(ipa::serviceadd, %s)\n\n" % hiera_function
+
+
+def createIpaCertmongerResources(hiera_key, default_value='{}'):
+    hiera_function = "hiera('%s', %s)" % (hiera_key, default_value)
+    return ("create_resources(certmonger::request_ipa_cert, %s)\n\n"
+            % hiera_function)
+
+
+def generateIpaServiceManifests(config, ipa_host, ipa_service, ssl_key_file,
+                                ssl_cert_file):
+    ipa_hosts = config['IPA_HOSTS_DICT']
+    ipa_hostname = ipa_hosts.get(ipa_host)
+    ipa_server_service = dict()
+    key = "freeipa_service_%s_%s" % (ipa_host, ipa_service)
+    config_name = "FREEIPA_SERVICE_%s_%s" % (ipa_host, ipa_service)
+    ipa_server_service.setdefault(key, {})
+    ipa_server_service[key]['name'] = ("%s/%s.packstack@PACKSTACK"
+                                       % (ipa_service, ipa_hostname))
+    config[config_name] = ipa_server_service
+    manifestfile = "%s_ipa.pp" % config['CONFIG_IPA_HOST']
+    manifestdata = createIpaServiceResources(config_name)
+    appendManifestFile(manifestfile, manifestdata)
+
+    ipa_client_cert = dict()
+    key = "freeipa_cert_%s_%s" % (ipa_host, ipa_service)
+    config_name = "FREEIPA_CERTIFICATE_%s_%s" % (ipa_host, ipa_service)
+    ipa_client_cert.setdefault(key, {})
+    ipa_client_cert[key]['name'] = ("openssl-%s/%s.packstack@PACKSTACK"
+                                    % (ipa_service, ipa_hostname))
+    ipa_client_cert[key]['seclib'] = 'openssl'
+    ipa_client_cert[key]['principal'] = ("%s/%s.packstack@PACKSTACK"
+                                         % (ipa_service, ipa_hostname))
+    ipa_client_cert[key]['key'] = ssl_key_file
+    ipa_client_cert[key]['cert'] = ssl_cert_file
+    ipa_client_cert[key]['hostname'] = "%s.packstack" % ipa_hostname
+    config[config_name] = ipa_client_cert
+    manifestfile = "%s_ipa_crts.pp" % ipa_host
+    manifestdata = createIpaCertmongerResources(config_name)
+    appendManifestFile(manifestfile, manifestdata, 'ipa-crts')
+
+
 def gethostlist(CONF):
     hosts = []
     for key, value in CONF.items():

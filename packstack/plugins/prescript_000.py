@@ -102,6 +102,23 @@ def initConfig(controller):
              "CONDITION": False,
              "DEPRECATES": ['CONFIG_MYSQL_INSTALL']},
 
+            {"CMD_OPTION": "ipa-install",
+             "USAGE": (
+                 "Set to 'y' if you would like Packstack to install and "
+                 "integrate Openstack with FreeIPA. NOTE: This is unsupported "
+                 "option."
+             ),
+             "PROMPT": "Should Packstack deploy and integrate with FreeIPA",
+             "OPTION_LIST": ["y", "n"],
+             "VALIDATORS": [validators.validate_options],
+             "DEFAULT_VALUE": "n",
+             "MASK_INPUT": False,
+             "LOOSE_VALIDATION": False,
+             "CONF_NAME": "CONFIG_IPA_INSTALL",
+             "USE_DEFAULT": False,
+             "NEED_CONFIRM": False,
+             "CONDITION": False},
+
             {"CMD_OPTION": "os-glance-install",
              "USAGE": (
                  "Set to 'y' if you would like Packstack to install "

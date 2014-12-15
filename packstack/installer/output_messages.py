@@ -67,6 +67,17 @@ WARN_WEAK_PASS = "Warning: Weak Password."
 WARN_NM_ENABLED = ("Warning: NetworkManager is active on %s. OpenStack "
                    "networking currently does not work on systems that have "
                    "the Network Manager service enabled.")
+WARN_IPA_INSTALLED = ("Warning: In order to join domain IPA hosts have their "
+                      "DNS resolver set to CONFIG_IPA_HOST!")
+WARN_IPA_CONTROLLER_SWIFT = ("Warning: FreeIPA was set up on controller node! "
+                             "We had to switch swift_proxy port to 8081 and this "
+                             "port isn't labeled properly so unless you set SElinux to "
+                             "permissive mode, swift proxy won't work.")
+WARN_IPA_CONTROLLER_HORIZON = ("Warning: FreeIPA was set up on controller node! "
+                               "We couldn't set dashboard configuration from puppet-horizon. "
+                               "Any Horizon SSL configuration will be ignored, dashboard will"
+                               "be accessible from http and https with certificates "
+                               "provided by ipa mod_nss configuration.")
 
 ERR_PING = "Error: the provided hostname is unreachable"
 ERR_SSH = "Error: could not connect to the ssh server: %s"

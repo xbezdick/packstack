@@ -33,6 +33,13 @@ $vncproxy_proto = $config_horizon_ssl ? {
   default => 'http',
 }
 
+if ($::fqdn == '' or $::fqdn =~ /localhost/) {
+  # For cases where FQDNs have not been correctly set
+  $vncproxy_server = choose_my_ip(hiera('HOST_LIST'))
+} else {
+  $vncproxy_server = $::fqdn
+}
+
 class { 'nova::compute':
   enabled                       => true,
   vncproxy_host                 => '%(CONFIG_CONTROLLER_HOST)s',

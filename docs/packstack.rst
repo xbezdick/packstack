@@ -606,6 +606,45 @@ Manila generic driver configuration
 **CONFIG_MANILA_SERVICE_INSTANCE_PASSWORD**
     Password to service instance user.
 
+Manila Network configuration
+----------------------------
+
+**CONFIG_MANILA_NETWORK_TYPE**
+    Type of networking that the backend will use. A more detailed description of each option is available in the Manila docs. Defaults to 'neutron'. ['neutron', 'neutron-single-network', 'nova-network', 'nova-single-network', 'standalone']
+
+Manila Neutron single network configuration
+-------------------------------------------
+
+**CONFIG_MANILA_NETWORK_NEUTRONSINGLE_NET_ID**
+    Default Neutron network that will be used for share server creation. Defaults to ''.
+
+**CONFIG_MANILA_NETWORK_NEUTRONSINGLE_SUBNET_ID**
+    Default Neutron subnet that will be used for share server creation. Should be assigned to network defined in opt 'CONFIG_MANILA_NETWORK_NEUTRONSINGLE_NET_ID'. Defaults to ''.
+
+Manila Nova Single Network configuration
+----------------------------------------
+
+**CONFIG_MANILA_NETWORK_NOVANET_NET_ID**
+    Default Nova network that will be used for share servers.
+
+Manila Standalone network configuration
+---------------------------------------
+
+**CONFIG_MANILA_NETWORK_STANDALONE_GATEWAY**
+    Gateway IPv4 address that should be used. Required. Defaults to ''.
+
+**CONFIG_MANILA_NETWORK_STANDALONE_NETMASK**
+    Network mask that will be used. Can be either decimal like '24' or binary like '255.255.255.0'. Required. Defaults to ''.
+
+**CONFIG_MANILA_NETWORK_STANDALONE_SEG_ID**
+    Set it if network has segmentation (VLAN, VXLAN, etc). It will be assigned to share-network and share drivers will be able to use this for network interfaces within provisioned share servers. Optional. Example: 1001. Defaults to ''.
+
+**CONFIG_MANILA_NETWORK_STANDALONE_IP_RANGE**
+    Can be IP address, range of IP addresses or list of addresses or ranges. Contains addresses from IP network that are allowed to be used. If empty, then will be assumed that all host addresses from network can be used. Optional. Examples: 10.0.0.10 or 10.0.0.10-10.0.0.20 or 10.0.0.10-10.0.0.20,10.0.0.30-10.0.0.40,10.0.0.50. Defaults to ''.
+
+**CONFIG_MANILA_NETWORK_STANDALONE_IP_VERSION**
+    IP version of network. Optional. Defaults to '4'. ['4', '6']
+
 Ironic Options
 --------------
 

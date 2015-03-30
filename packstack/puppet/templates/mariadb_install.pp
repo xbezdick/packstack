@@ -4,13 +4,18 @@ package { 'mariadb-server':
   ensure => absent,
 }
 
+$bind_address = hiera('CONFIG_IP_VERSION') ? {
+  'ipv6' => '::',
+  'ipv4' => '0.0.0.0',
+}
+
 class { 'mysql::server':
   package_name     => 'mariadb-galera-server',
   restart          => true,
   root_password    => hiera('CONFIG_MARIADB_PW'),
   require          => Package['mariadb-server'],
   override_options => {
-    'mysqld' => { bind_address           => '0.0.0.0',
+    'mysqld' => { bind_address           => $bind_address,
                   default_storage_engine => 'InnoDB',
                   max_connections        => '1024',
                   open_files_limit       => '-1',

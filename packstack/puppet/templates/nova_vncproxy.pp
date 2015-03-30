@@ -8,8 +8,14 @@ if $is_using_ssl_on_horizon == true {
   }
 }
 
+$vnc_bind_host = hiera('CONFIG_IP_VERSION') ? {
+  'ipv6' => '::0',
+  'ipv4' => '0.0.0.0',
+}
+
 class { 'nova::vncproxy':
   enabled => true,
+  host    => $vnc_bind_host,
 }
 
 class { 'nova::consoleauth':

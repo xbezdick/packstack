@@ -1,5 +1,5 @@
 ironic_config {
-  'glance/glance_host': value => hiera('CONFIG_STORAGE_HOST');
+  'glance/glance_host': value => hiera('CONFIG_STORAGE_HOST_URL');
 }
 
 class { 'ironic::api':

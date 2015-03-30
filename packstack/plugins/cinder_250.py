@@ -700,8 +700,6 @@ def check_netapp_eseries_options(config):
 
 def check_cinder_vg(config, messages):
     cinders_volume = 'cinder-volumes'
-    if config['CONFIG_UNSUPPORTED'] != 'y':
-        config['CONFIG_STORAGE_HOST'] = config['CONFIG_CONTROLLER_HOST']
 
     # Do we have a cinder-volumes vg?
     have_cinders_volume = False
@@ -732,18 +730,12 @@ def check_cinder_vg(config, messages):
 
 
 def create_keystone_manifest(config, messages):
-    if config['CONFIG_UNSUPPORTED'] != 'y':
-        config['CONFIG_STORAGE_HOST'] = config['CONFIG_CONTROLLER_HOST']
-
     manifestfile = "%s_keystone.pp" % config['CONFIG_CONTROLLER_HOST']
     manifestdata = getManifestTemplate("keystone_cinder")
     appendManifestFile(manifestfile, manifestdata)
 
 
 def create_manifest(config, messages):
-    if config['CONFIG_UNSUPPORTED'] != 'y':
-        config['CONFIG_STORAGE_HOST'] = config['CONFIG_CONTROLLER_HOST']
-
     manifestdata = getManifestTemplate(get_mq(config, "cinder"))
     manifestfile = "%s_cinder.pp" % config['CONFIG_STORAGE_HOST']
     manifestdata += getManifestTemplate("cinder")

@@ -1,5 +1,5 @@
 $sahara_cfg_sahara_db_pw = hiera('CONFIG_SAHARA_DB_PW')
-$sahara_cfg_sahara_mariadb_host = hiera('CONFIG_MARIADB_HOST')
+$sahara_cfg_sahara_mariadb_host = hiera('CONFIG_MARIADB_HOST_URL')
 
 $sahara_cfg_config_neutron_install = hiera('CONFIG_NEUTRON_INSTALL')
 

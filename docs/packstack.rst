@@ -101,6 +101,17 @@ Global Options
 **CONFIG_UNSUPPORTED**
     Specify 'y' if you want to use unsupported parameters. This should be used only if you know what you are doing. Issues caused by using unsupported options will not be fixed before the next major release. ['y', 'n']
 
+
+SSL setup
+---------
+Packstack supports ability to be get CA certificate and use it to sign all certificates used in Openstack deployment. Standard workflow for this would be creating Subordinate CA. If Root CA is given to Packstack it is not safe to use it for anything else. If no CA is provided and CONFIG_SSL_CACERT_SELFSIGN is set to 'y' Packstack will use Selfsigned CA.
+
+**CONFIG_SSL_CACERT_FILE**
+
+**CONFIG_SSL_CACERT_KEY_FILE**
+
+**CONFIG_SSL_CACERT_SELFSIGN**
+
 vCenter Config Parameters
 -------------------------
 
@@ -220,21 +231,6 @@ AMQP Config SSL parameters
 
 **CONFIG_AMQP_NSS_CERTDB_PW**
     Password for the NSS certificate database of the AMQP service.
-
-**CONFIG_AMQP_SSL_PORT**
-    Port on which the AMQP service listens for SSL connections.
-
-**CONFIG_AMQP_SSL_CACERT_FILE**
-    File name of the CAcertificate that the AMQP service will use for verification.
-
-**CONFIG_AMQP_SSL_CERT_FILE**
-    File name of the certificate that the AMQP service will use for verification.
-
-**CONFIG_AMQP_SSL_KEY_FILE**
-    File name of the private key that the AMQP service will use for verification.
-
-**CONFIG_AMQP_SSL_SELF_SIGNED**
-    Specify 'y' to automatically generate a self-signed SSL certificate and key. ['y', 'n']
 
 AMQP Config Athentication parameters
 ------------------------------------
@@ -825,13 +821,13 @@ OpenStack Horizon Config parameters
 SSL Config parameters
 ---------------------
 
-**CONFIG_SSL_CERT**
+**CONFIG_HORIZON_SSL_CERT**
     PEM-encoded certificate to be used for SSL connections on the https server (the certificate should not require a passphrase). To generate a certificate, leave blank.
 
-**CONFIG_SSL_KEY**
+**CONFIG_HORIZON_SSL_KEY**
     SSL keyfile corresponding to the certificate if one was specified.
 
-**CONFIG_SSL_CACHAIN**
+**CONFIG_HORIZON_SSL_CACHAIN**
     PEM-encoded CA certificates from which the certificate chain of the server certificate can be assembled.
 
 OpenStack Swift Config parameters

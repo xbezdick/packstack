@@ -28,6 +28,7 @@ from packstack.modules.shortcuts import get_mq
 from packstack.modules.ospluginutils import appendManifestFile
 from packstack.modules.ospluginutils import createFirewallResources
 from packstack.modules.ospluginutils import getManifestTemplate
+from packstack.modules.ospluginutils import generateSSLCert
 
 # ------------- Heat Packstack Plugin Initialization --------------
 
@@ -170,6 +171,20 @@ def initSequences(controller):
 # ------------------------ step functions -------------------------
 
 def create_manifest(config, messages):
+    if config['CONFIG_AMQP_ENABLE_SSL']:
+        ssl_host = config['CONFIG_CONTROLLER_HOST']
+        config['CONFIG_HEAT_SSL_CERT'] = (
+            '/etc/pki/tls/certs/ssl_amqp_heat.crt'
+        )
+        config['CONFIG_HEAT_SSL_KEY'] = (
+            '/etc/pki/tls/private/ssl_amqp_heat.key'
+        )
+        ssl_key_file = config['CONFIG_HEAT_SSL_KEY']
+        ssl_cert_file = config['CONFIG_HEAT_SSL_CERT']
+        service = 'heat'
+        generateSSLCert(config, ssl_host, service, ssl_key_file,
+                        ssl_cert_file)
+
     manifestfile = "%s_heat.pp" % config['CONFIG_CONTROLLER_HOST']
     manifestdata = getManifestTemplate(get_mq(config, "heat"))
     manifestdata += getManifestTemplate("heat")

@@ -29,6 +29,7 @@ from packstack.modules.shortcuts import get_mq
 from packstack.modules.ospluginutils import appendManifestFile
 from packstack.modules.ospluginutils import createFirewallResources
 from packstack.modules.ospluginutils import getManifestTemplate
+from packstack.modules.ospluginutils import generateSSLCert
 
 # ------------- Neutron Packstack Plugin Initialization --------------
 
@@ -518,7 +519,22 @@ def create_manifests(config, messages):
 
     plugin_manifest = 'neutron_ml2_plugin'
 
+    if config['CONFIG_AMQP_ENABLE_SSL']:
+        config['CONFIG_NEUTRON_SSL_CERT'] = (
+            '/etc/pki/tls/certs/ssl_amqp_neutron.crt'
+        )
+        config['CONFIG_NEUTRON_SSL_KEY'] = (
+            '/etc/pki/tls/private/ssl_amqp_neutron.key'
+        )
+        ssl_key_file = config['CONFIG_NEUTRON_SSL_KEY']
+        ssl_cert_file = config['CONFIG_NEUTRON_SSL_CERT']
+        service = 'neutron'
+
     for host in q_hosts:
+        if config['CONFIG_AMQP_ENABLE_SSL']:
+            generateSSLCert(config, host, service, ssl_key_file,
+                            ssl_cert_file)
+
         manifest_file = "%s_neutron.pp" % (host,)
         manifest_data = getManifestTemplate("neutron")
         manifest_data += getManifestTemplate(get_mq(config, "neutron"))

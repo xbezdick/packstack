@@ -26,6 +26,7 @@ from packstack.modules.shortcuts import get_mq
 from packstack.modules.ospluginutils import appendManifestFile
 from packstack.modules.ospluginutils import createFirewallResources
 from packstack.modules.ospluginutils import getManifestTemplate
+from packstack.modules.ospluginutils import generateSSLCert
 
 # ------------------ Sahara installer initialization ------------------
 
@@ -90,13 +91,26 @@ def initSequences(controller):
 def create_keystone_manifest(config, messages):
     if config['CONFIG_UNSUPPORTED'] != 'y':
         config['CONFIG_SAHARA_HOST'] = config['CONFIG_CONTROLLER_HOST']
-
-    manifestfile = "%s_keystone.pp" % config['CONFIG_CONTROLLER_HOST']
+    manifestfile = "%s_keystone.pp" % config['CONFIG_SAHARA_HOST']
     manifestdata = getManifestTemplate("keystone_sahara")
     appendManifestFile(manifestfile, manifestdata)
 
 
 def create_manifest(config, messages):
+    if config['CONFIG_AMQP_ENABLE_SSL']:
+        ssl_host = config['CONFIG_SAHARA_HOST']
+        config['CONFIG_SAHARA_SSL_CERT'] = (
+            '/etc/pki/tls/certs/ssl_amqp_sahara.crt'
+        )
+        config['CONFIG_SAHARA_SSL_KEY'] = (
+            '/etc/pki/tls/private/ssl_amqp_sahara.key'
+        )
+        ssl_key_file = config['CONFIG_SAHARA_SSL_KEY']
+        ssl_cert_file = config['CONFIG_SAHARA_SSL_CERT']
+        service = 'sahara'
+        generateSSLCert(config, ssl_host, service, ssl_key_file,
+                        ssl_cert_file)
+
     manifestfile = "%s_sahara.pp" % config['CONFIG_STORAGE_HOST']
     manifestdata = getManifestTemplate(get_mq(config, "sahara"))
     manifestdata += getManifestTemplate("sahara.pp")

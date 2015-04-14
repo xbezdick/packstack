@@ -31,6 +31,7 @@ from packstack.modules.shortcuts import get_mq
 from packstack.modules.ospluginutils import appendManifestFile
 from packstack.modules.ospluginutils import createFirewallResources
 from packstack.modules.ospluginutils import getManifestTemplate
+from packstack.modules.ospluginutils import generateSSLCert
 
 # ------------------ Cinder Packstack Plugin initialization ------------------
 
@@ -657,6 +658,20 @@ def create_keystone_manifest(config, messages):
 
 
 def create_manifest(config, messages):
+    if config['CONFIG_AMQP_ENABLE_SSL']:
+        ssl_host = config['CONFIG_STORAGE_HOST']
+        config['CONFIG_CINDER_SSL_CERT'] = (
+            '/etc/pki/tls/certs/ssl_amqp_cinder.crt'
+        )
+        config['CONFIG_CINDER_SSL_KEY'] = (
+            '/etc/pki/tls/private/ssl_amqp_cinder.key'
+        )
+        ssl_key_file = config['CONFIG_CINDER_SSL_KEY']
+        ssl_cert_file = config['CONFIG_CINDER_SSL_CERT']
+        service = 'cinder'
+        generateSSLCert(config, ssl_host, service, ssl_key_file,
+                        ssl_cert_file)
+
     manifestdata = getManifestTemplate(get_mq(config, "cinder"))
     manifestfile = "%s_cinder.pp" % config['CONFIG_STORAGE_HOST']
     manifestdata += getManifestTemplate("cinder")

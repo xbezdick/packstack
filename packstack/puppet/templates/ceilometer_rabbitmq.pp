@@ -1,6 +1,6 @@
 $kombu_ssl_ca_certs = hiera('CONFIG_SSL_CACERT_FILE')
 $kombu_ssl_keyfile = hiera('CONFIG_CEILOMETER_SSL_KEY', undef)
-$kombu_ssl_certfile = hiera('CONFIG_CCEILOMETER_SSL_CERT', undef)
+$kombu_ssl_certfile = hiera('CONFIG_CEILOMETER_SSL_CERT', undef)
 
 if $kombu_ssl_keyfile {
   $files_to_set_owner = [ $kombu_ssl_keyfile, $kombu_ssl_certfile ]

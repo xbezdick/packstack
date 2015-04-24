@@ -11,8 +11,8 @@ if $kombu_ssl_keyfile {
   file { $files_to_set_owner:
     owner   => 'trove',
     group   => 'trove',
-    require => Package['openstack-trove-common'],
   }
+  Package<|tag=='trove'|> -> File[$files_to_set_owner]
   File[$files_to_set_owner] ~> Service<||>
 }
 
